@@ -4,9 +4,10 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       const tabs = btn.closest('.tabs');
       const target = btn.dataset.tab;
-      tabs.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      tabs.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
       tabs.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
       btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
       const panel = tabs.querySelector(`.tab-panel[data-panel="${target}"]`);
       if (panel) panel.classList.add('active');
     });

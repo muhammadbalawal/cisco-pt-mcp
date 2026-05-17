@@ -20,8 +20,8 @@
       <span>cisco-pt-mcp</span>
     </a>
     <div class="nav-links">
-      <a href="https://github.com/muhammadbalawal/cisco-pt-mcp" class="nav-link" target="_blank">GitHub</a>
-      <a href="https://pypi.org/project/cisco-pt-mcp/" class="nav-link" target="_blank">PyPI</a>
+      <a href="https://github.com/muhammadbalawal/cisco-pt-mcp" class="nav-link" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a href="https://pypi.org/project/cisco-pt-mcp/" class="nav-link" target="_blank" rel="noopener noreferrer">PyPI</a>
       <a href="#install" class="btn btn-primary">Install</a>
     </div>
   </div>
@@ -41,12 +41,12 @@
     </p>
     <div class="hero-cta">
       <a href="#install" class="btn btn-primary btn-lg">Get Started</a>
-      <a href="https://github.com/muhammadbalawal/cisco-pt-mcp" class="btn btn-ghost btn-lg" target="_blank">View on GitHub</a>
+      <a href="https://github.com/muhammadbalawal/cisco-pt-mcp" class="btn btn-ghost btn-lg" target="_blank" rel="noopener noreferrer">View on GitHub</a>
     </div>
     <!-- Drop your video/iframe here later. The placeholder disappears when a child iframe/video is present. -->
     <div class="video-wrap">
       <div class="video-placeholder-inner">
-        <div class="play-icon">▶</div>
+        <div class="play-icon" aria-hidden="true">▶</div>
         <p>Demo video coming soon</p>
       </div>
     </div>
@@ -62,13 +62,13 @@
       <div class="step">
         <div class="step-num">01</div>
         <h3>Install the server</h3>
-        <p>Register cisco-pt-mcp with your MCP client in one line using <code style="color:var(--accent);font-family:var(--font-mono);font-size:13px">uvx</code> — no venv or cloning required.</p>
+        <p>Register cisco-pt-mcp with your MCP client in one line using <code class="inline-code">uvx</code> — no venv or cloning required.</p>
       </div>
       <div class="step-arrow">→</div>
       <div class="step">
         <div class="step-num">02</div>
         <h3>Install the extension</h3>
-        <p>Drop <code style="color:var(--accent);font-family:var(--font-mono);font-size:13px">cisco-pt-mcp.pts</code> into Packet Tracer's Extension Manager and restart. A bridge window appears in the Extensions menu.</p>
+        <p>Drop <code class="inline-code">cisco-pt-mcp.pts</code> into Packet Tracer's Extension Manager and restart. A bridge window appears in the Extensions menu.</p>
       </div>
       <div class="step-arrow">→</div>
       <div class="step">
@@ -135,21 +135,21 @@
     <div class="install-step">
       <h3>1 — MCP Server</h3>
       <p>
-        First, <a href="https://docs.astral.sh/uv/getting-started/installation/" style="color:var(--accent)" target="_blank">install uv</a> if you don't have it (one command on any platform).
+        First, <a href="https://docs.astral.sh/uv/getting-started/installation/" target="_blank" rel="noopener noreferrer">install uv</a> if you don't have it (one command on any platform).
         Then register the server with your MCP client:
       </p>
       <div class="tabs">
-        <div class="tab-list">
-          <button class="tab-btn active" data-tab="claude-code">Claude Code</button>
-          <button class="tab-btn" data-tab="claude-desktop">Claude Desktop</button>
-          <button class="tab-btn" data-tab="cursor">Cursor</button>
-          <button class="tab-btn" data-tab="vscode">VS Code</button>
-          <button class="tab-btn" data-tab="codex">Codex CLI</button>
-          <button class="tab-btn" data-tab="backboard">Backboard</button>
+        <div class="tab-list" role="tablist" aria-label="MCP client install instructions">
+          <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="panel-claude-code" data-tab="claude-code">Claude Code</button>
+          <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-claude-desktop" data-tab="claude-desktop">Claude Desktop</button>
+          <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-cursor" data-tab="cursor">Cursor</button>
+          <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-vscode" data-tab="vscode">VS Code</button>
+          <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-codex" data-tab="codex">Codex CLI</button>
+          <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-backboard" data-tab="backboard">Backboard</button>
         </div>
         <div class="tab-panels">
 
-          <div class="tab-panel active" data-panel="claude-code">
+          <div class="tab-panel active" role="tabpanel" id="panel-claude-code" data-panel="claude-code">
             <div class="code-label">Terminal</div>
             <div class="code-block">
               <pre>claude mcp add cisco-pt-mcp --scope user -- uvx cisco-pt-mcp</pre>
@@ -157,7 +157,7 @@
             </div>
           </div>
 
-          <div class="tab-panel" data-panel="claude-desktop">
+          <div class="tab-panel" role="tabpanel" id="panel-claude-desktop" data-panel="claude-desktop">
             <div class="code-label">%APPDATA%\Claude\claude_desktop_config.json</div>
             <div class="code-block">
               <pre>{
@@ -169,7 +169,7 @@
             </div>
           </div>
 
-          <div class="tab-panel" data-panel="cursor">
+          <div class="tab-panel" role="tabpanel" id="panel-cursor" data-panel="cursor">
             <div class="code-label">%USERPROFILE%\.cursor\mcp.json</div>
             <div class="code-block">
               <pre>{
@@ -181,7 +181,7 @@
             </div>
           </div>
 
-          <div class="tab-panel" data-panel="vscode">
+          <div class="tab-panel" role="tabpanel" id="panel-vscode" data-panel="vscode">
             <div class="code-label">.vscode/mcp.json</div>
             <div class="code-block">
               <pre>{
@@ -193,7 +193,7 @@
             </div>
           </div>
 
-          <div class="tab-panel" data-panel="codex">
+          <div class="tab-panel" role="tabpanel" id="panel-codex" data-panel="codex">
             <div class="code-label">%USERPROFILE%\.codex\config.toml</div>
             <div class="code-block">
               <pre>[mcp_servers.cisco-pt-mcp]
@@ -203,7 +203,7 @@ args = ["cisco-pt-mcp"]</pre>
             </div>
           </div>
 
-          <div class="tab-panel" data-panel="backboard">
+          <div class="tab-panel" role="tabpanel" id="panel-backboard" data-panel="backboard">
             <div class="code-label">Terminal</div>
             <div class="code-block">
               <pre>backboard config add-mcp "{\"name\": \"cisco-pt-mcp\", \"command\": \"uvx\", \"args\": [\"cisco-pt-mcp\"]}"</pre>
@@ -218,7 +218,7 @@ args = ["cisco-pt-mcp"]</pre>
     <!-- Step 2: Extension -->
     <div class="install-step">
       <h3>2 — Packet Tracer Extension</h3>
-      <p>Download <a href="https://github.com/muhammadbalawal/cisco-pt-mcp/raw/main/extension/cisco-pt-mcp.pts" style="color:var(--accent)" target="_blank">cisco-pt-mcp.pts</a> then install it through Packet Tracer's Extension Manager:</p>
+      <p>Download <a href="https://github.com/muhammadbalawal/cisco-pt-mcp/raw/main/extension/cisco-pt-mcp.pts" target="_blank" rel="noopener noreferrer">cisco-pt-mcp.pts</a> then install it through Packet Tracer's Extension Manager:</p>
       <ol>
         <li>Open Packet Tracer.</li>
         <li>Go to <strong>Extensions → Extension Manager → Install Extension…</strong></li>
@@ -231,7 +231,7 @@ args = ["cisco-pt-mcp"]</pre>
     <!-- Step 3: Run -->
     <div class="install-step">
       <h3>3 — Run</h3>
-      <p>Launch Packet Tracer and open the bridge window. Then start your MCP client — the bridge status pill flips to <span style="color:var(--accent);font-family:var(--font-mono);font-size:13px">connected</span> within a second. Start prompting.</p>
+      <p>Launch Packet Tracer and open the bridge window. Then start your MCP client — the bridge status pill flips to <span class="inline-code">connected</span> within a second. Start prompting.</p>
     </div>
 
   </div>
@@ -241,10 +241,10 @@ args = ["cisco-pt-mcp"]</pre>
 <footer class="footer">
   <div class="container">
     <div class="footer-links">
-      <a href="https://github.com/muhammadbalawal/cisco-pt-mcp" target="_blank">GitHub</a>
-      <a href="https://pypi.org/project/cisco-pt-mcp/" target="_blank">PyPI</a>
-      <a href="https://github.com/muhammadbalawal/cisco-pt-mcp/blob/main/LICENSE" target="_blank">MIT License</a>
-      <a href="https://github.com/muhammadbalawal/cisco-pt-mcp/issues" target="_blank">Issues</a>
+      <a href="https://github.com/muhammadbalawal/cisco-pt-mcp" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a href="https://pypi.org/project/cisco-pt-mcp/" target="_blank" rel="noopener noreferrer">PyPI</a>
+      <a href="https://github.com/muhammadbalawal/cisco-pt-mcp/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>
+      <a href="https://github.com/muhammadbalawal/cisco-pt-mcp/issues" target="_blank" rel="noopener noreferrer">Issues</a>
     </div>
     <p class="footer-copy">cisco-pt-mcp is not affiliated with Cisco Systems.</p>
   </div>
