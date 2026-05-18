@@ -2,6 +2,8 @@
 
 Let AI clients control a running Cisco Packet Tracer instance. Open source.
 
+![Demo](demo.gif)
+
 ---
 
 ## Install
