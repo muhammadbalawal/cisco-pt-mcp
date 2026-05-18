@@ -18,6 +18,7 @@ env/
 .ruff_cache/
 
 # Editor / OS junk
+.claude/
 .vscode/
 .idea/
 *.swp
