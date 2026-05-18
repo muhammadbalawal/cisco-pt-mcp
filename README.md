@@ -2,7 +2,7 @@
 
 Let AI clients control a running Cisco Packet Tracer instance. Open source.
 
-![Demo](demo.gif)
+![Demo](https://raw.githubusercontent.com/muhammadbalawal/cisco-pt-mcp/main/demo.gif)
 
 ---
 
