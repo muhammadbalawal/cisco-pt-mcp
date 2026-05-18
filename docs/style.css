@@ -91,7 +91,6 @@ ul { list-style: none; }
 /* ── HERO ── */
 .hero {
   padding: 88px 0 64px;
-  margin-top: 46px;
 }
 .hero-title {
   font-size: clamp(52px, 6.5vw, 80px);
@@ -134,12 +133,14 @@ ul { list-style: none; }
 }
 .hero-mockup-inner p { margin-top: 8px; }
 .hero-mockup iframe,
-.hero-mockup video {
+.hero-mockup video,
+.hero-mockup img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   border: none;
+  object-fit: cover;
 }
 
 /* ── FEATURES ── */
@@ -265,6 +266,7 @@ ul { list-style: none; }
   line-height: 1.65;
   margin-bottom: 20px;
 }
+.infra-sub a { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
 .tools-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>cisco-pt-mcp — AI control for Cisco Packet Tracer</title>
+  <title>cisco-pt-mcp: AI control for Cisco Packet Tracer</title>
   <meta name="description" content="MCP server that lets any AI client drive a running Cisco Packet Tracer instance. Build topologies, configure devices, run simulations.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,164 +12,20 @@
 </head>
 <body>
 
-<!-- ── NAV ── -->
-<nav class="nav">
-  <div class="nav-inner">
-    <a class="nav-logo" href="#">
-      <span class="nav-logo-arrow">&gt;</span>
-      <span class="nav-logo-name">cisco-pt-mcp</span>
-    </a>
-    <a href="https://github.com/muhammadbalawal/cisco-pt-mcp" class="btn btn-outline" target="_blank" rel="noopener noreferrer">
-      ★ Star on GitHub
-    </a>
-  </div>
-</nav>
-
 <!-- ── HERO ── -->
 <section class="hero">
   <div class="container">
     <h1 class="hero-title">cisco-pt-mcp.</h1>
     <p class="hero-subtitle">
-      Let AI clients control a running Cisco Packet Tracer instance.<br>
-      Powered by MCP, Socket.IO, and a lightweight PT extension.
+      Let AI clients control a running Cisco Packet Tracer instance. Open source.
     </p>
     <div class="hero-cta">
       <a href="#install" class="btn btn-primary">Get Started</a>
-      <a href="https://github.com/muhammadbalawal/cisco-pt-mcp" class="btn btn-outline" target="_blank" rel="noopener noreferrer">Open Source</a>
+      <a href="https://github.com/muhammadbalawal/cisco-pt-mcp" class="btn btn-outline" target="_blank" rel="noopener noreferrer">★ Star on GitHub</a>
     </div>
 
-    <!-- Replace the inner div with <iframe> or <video> when ready -->
     <div class="hero-mockup">
-      <div class="hero-mockup-inner" aria-hidden="true">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" style="margin:0 auto 8px">
-          <rect width="32" height="32" rx="8" fill="#e2e2e2"/>
-          <path d="M9 12l4 4-4 4M15 20h8" stroke="#aaa" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-        <p>Demo video coming soon</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ── FEATURE 1: Build topologies ── -->
-<section class="feature" id="how-it-works">
-  <div class="container">
-    <div class="feature-grid">
-
-      <div class="feature-text">
-        <div class="feature-eyebrow">Topology Builder</div>
-        <h2>Build complete networks with a prompt.</h2>
-        <p>
-          Add routers, switches, and PCs to the canvas, connect them with the right cable type, and configure IPs — all from a single AI conversation.
-        </p>
-        <ul class="feature-bullets">
-          <li>15+ device types — routers, switches, PCs, servers</li>
-          <li>Automatic or explicit cable selection</li>
-          <li>Coordinate-based placement on the canvas</li>
-          <li>Interface module installation at runtime</li>
-        </ul>
-      </div>
-
-      <div class="feature-mockup">
-        <div class="mockup-terminal">
-          <div class="mockup-terminal-bar">
-            <span class="dot dot-r"></span>
-            <span class="dot dot-y"></span>
-            <span class="dot dot-g"></span>
-          </div>
-          <div class="mockup-terminal-body">
-            <div><span class="t-prompt">AI &gt; </span><span class="t-cmd">addDevice("R1", "Router-PT", 100, 200)</span></div>
-            <div><span class="t-out">{ </span><span class="t-key">"success"</span><span class="t-out">: </span><span class="t-val">true</span><span class="t-out"> }</span></div>
-            <div style="margin-top:6px"><span class="t-prompt">AI &gt; </span><span class="t-cmd">addDevice("SW1", "2960-24TT", 300, 200)</span></div>
-            <div><span class="t-out">{ </span><span class="t-key">"success"</span><span class="t-out">: </span><span class="t-val">true</span><span class="t-out"> }</span></div>
-            <div style="margin-top:6px"><span class="t-prompt">AI &gt; </span><span class="t-cmd">addLink("R1", "Gig0/0", "SW1", "Fa0/1", "auto")</span></div>
-            <div><span class="t-out">{ </span><span class="t-key">"success"</span><span class="t-out">: </span><span class="t-val">true</span><span class="t-out">, </span><span class="t-key">"message"</span><span class="t-out">: </span><span class="t-str">"Link created"</span><span class="t-out"> }</span></div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- ── FEATURE 2: Configure devices ── -->
-<section class="feature">
-  <div class="container">
-    <div class="feature-grid feature-grid-rev">
-
-      <div class="feature-text">
-        <div class="feature-eyebrow">IOS Configuration</div>
-        <h2>Configure any IOS device.</h2>
-        <p>
-          Run multi-line IOS CLI commands on any router or switch — routing protocols, VLANs, ACLs, NAT — and have the config written to memory automatically.
-        </p>
-        <ul class="feature-bullets">
-          <li>Full IOS command support, any mode</li>
-          <li>Multi-line config blocks in one call</li>
-          <li>write memory runs automatically after config</li>
-          <li>PC IP, DHCP, gateway, and DNS via a single tool</li>
-        </ul>
-      </div>
-
-      <div class="feature-mockup">
-        <div class="mockup-terminal">
-          <div class="mockup-terminal-bar">
-            <span class="dot dot-r"></span>
-            <span class="dot dot-y"></span>
-            <span class="dot dot-g"></span>
-          </div>
-          <div class="mockup-terminal-body">
-            <div><span class="t-prompt">AI &gt; </span><span class="t-cmd">configureIosDevice("R1",</span></div>
-            <div style="padding-left:16px"><span class="t-str">"interface Gig0/0\n ip address 192.168.1.1 255.255.255.0\n no shutdown\nip route 0.0.0.0 0.0.0.0 10.0.0.1"</span><span class="t-cmd">)</span></div>
-            <div style="margin-top:6px"><span class="t-out">{</span></div>
-            <div style="padding-left:12px"><span class="t-key">"success"</span><span class="t-out">: </span><span class="t-val">true</span><span class="t-out">,</span></div>
-            <div style="padding-left:12px"><span class="t-key">"message"</span><span class="t-out">: </span><span class="t-str">"4 commands applied"</span></div>
-            <div><span class="t-out">}</span></div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- ── FEATURE 3: Simulate & verify ── -->
-<section class="feature">
-  <div class="container">
-    <div class="feature-grid">
-
-      <div class="feature-text">
-        <div class="feature-eyebrow">Simulation</div>
-        <h2>Simulate and verify, hands-free.</h2>
-        <p>
-          Switch to simulation mode, send PDUs between any two devices, step through frames, and inspect results — without touching the mouse.
-        </p>
-        <ul class="feature-bullets">
-          <li>ICMP, TCP, UDP, HTTP, HTTPS, DNS PDU types</li>
-          <li>Step forward, backward, or reset the timeline</li>
-          <li>Inspect accepted, dropped, and in-transit frames</li>
-          <li>Full command log retrieval per device</li>
-        </ul>
-      </div>
-
-      <div class="feature-mockup">
-        <div class="mockup-terminal">
-          <div class="mockup-terminal-bar">
-            <span class="dot dot-r"></span>
-            <span class="dot dot-y"></span>
-            <span class="dot dot-g"></span>
-          </div>
-          <div class="mockup-terminal-body">
-            <div><span class="t-prompt">AI &gt; </span><span class="t-cmd">sendPdu("PC0", "Server1")</span></div>
-            <div><span class="t-out">{ </span><span class="t-key">"success"</span><span class="t-out">: </span><span class="t-val">true</span><span class="t-out"> }</span></div>
-            <div style="margin-top:6px"><span class="t-prompt">AI &gt; </span><span class="t-cmd">stepSimulation("forward", 5)</span></div>
-            <div><span class="t-out">{ </span><span class="t-key">"frameCount"</span><span class="t-out">: </span><span class="t-val">12</span><span class="t-out"> }</span></div>
-            <div style="margin-top:6px"><span class="t-prompt">AI &gt; </span><span class="t-cmd">getPduResults(["ICMP"])</span></div>
-            <div><span class="t-out">{ </span><span class="t-key">"frames"</span><span class="t-out">: [{ </span><span class="t-key">"status"</span><span class="t-out">: </span><span class="t-str">"accepted"</span><span class="t-out"> }] }</span></div>
-          </div>
-        </div>
-      </div>
-
+      <video src="demo.mp4" autoplay loop muted playsinline></video>
     </div>
   </div>
 </section>
@@ -178,60 +34,86 @@
 <section class="infra-section" id="tools">
   <div class="container">
     <div class="infra-top">
-      <h2 class="infra-headline">9 tools.<br>One bridge.</h2>
+      <h2 class="infra-headline">18 tools.<br>One bridge.</h2>
       <div class="infra-right">
         <p class="infra-sub">
-          Everything an AI model needs to build and inspect a full Packet Tracer lab — no mouse required.
+          Want more tools? <a href="https://github.com/muhammadbalawal/cisco-pt-mcp/issues" target="_blank" rel="noopener noreferrer">Open an issue on GitHub.</a>
         </p>
-        <a href="#install" class="btn btn-primary">Get Started</a>
       </div>
     </div>
 
     <div class="tools-grid">
       <div class="tool-card">
-        <div class="tool-icon">+D</div>
         <div class="tool-name">addDevice</div>
         <div class="tool-desc">Drop a router, switch, or PC onto the canvas at a given position.</div>
       </div>
       <div class="tool-card">
-        <div class="tool-icon">+M</div>
         <div class="tool-name">addModule</div>
         <div class="tool-desc">Install an interface module into a device slot (e.g. WIC card).</div>
       </div>
       <div class="tool-card">
-        <div class="tool-icon">+L</div>
         <div class="tool-name">addLink</div>
         <div class="tool-desc">Connect two devices with straight-through, crossover, serial, or fiber cable.</div>
       </div>
       <div class="tool-card">
-        <div class="tool-icon">−D</div>
         <div class="tool-name">removeDevice</div>
         <div class="tool-desc">Delete one or more devices from the topology by name.</div>
       </div>
       <div class="tool-card">
-        <div class="tool-icon">−L</div>
         <div class="tool-name">removeLink</div>
         <div class="tool-desc">Delete one or more cables by device and port name.</div>
       </div>
       <div class="tool-card">
-        <div class="tool-icon">IP</div>
-        <div class="tool-name">configurePcIp</div>
-        <div class="tool-desc">Set static IP, subnet, gateway, DNS — or enable DHCP — on a PC.</div>
+        <div class="tool-name">renameDevice</div>
+        <div class="tool-desc">Rename an existing device. New name must be unique in the workspace.</div>
       </div>
       <div class="tool-card">
-        <div class="tool-icon">$&gt;</div>
+        <div class="tool-name">moveDevice</div>
+        <div class="tool-desc">Reposition a device to new coordinates on the canvas.</div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-name">setPower</div>
+        <div class="tool-desc">Power a device on or off.</div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-name">configurePcIp</div>
+        <div class="tool-desc">Set static IP, subnet, gateway, DNS, or enable DHCP on a PC.</div>
+      </div>
+      <div class="tool-card">
         <div class="tool-name">configureIosDevice</div>
         <div class="tool-desc">Run any IOS CLI commands on a router or switch. Multi-line configs supported.</div>
       </div>
       <div class="tool-card">
-        <div class="tool-icon">◎</div>
         <div class="tool-name">getNetwork</div>
         <div class="tool-desc">Snapshot of all devices, interfaces, and cable connections in the workspace.</div>
       </div>
       <div class="tool-card">
-        <div class="tool-icon">ⓘ</div>
         <div class="tool-name">getDeviceInfo</div>
-        <div class="tool-desc">Detailed view of a single device — model, interfaces, and connected neighbours.</div>
+        <div class="tool-desc">Detailed view of a single device: model, interfaces, and connected neighbours.</div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-name">setSimulationMode</div>
+        <div class="tool-desc">Switch between simulation mode and realtime mode.</div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-name">getSimulationStatus</div>
+        <div class="tool-desc">Query current simulation state: mode, elapsed time, and frame count.</div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-name">stepSimulation</div>
+        <div class="tool-desc">Step the simulation forward, backward, or reset it entirely.</div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-name">sendPdu</div>
+        <div class="tool-desc">Add an ICMP ping PDU between two devices using PT's native Simple PDU.</div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-name">getPduResults</div>
+        <div class="tool-desc">Read PDU outcomes: source, destination, traffic type, and status.</div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-name">getCommandLog</div>
+        <div class="tool-desc">Read the IOS command history logged by Packet Tracer, optionally filtered by device.</div>
       </div>
     </div>
   </div>
@@ -245,18 +127,16 @@
 
     <!-- Step 1 -->
     <div class="install-step">
-      <h3>1 — MCP Server</h3>
+      <h3>1. MCP Server</h3>
       <p>
         First <a href="https://docs.astral.sh/uv/getting-started/installation/" target="_blank" rel="noopener noreferrer">install uv</a> if you don't have it, then register with your client:
       </p>
       <div class="tabs">
         <div class="tab-list" role="tablist" aria-label="MCP client install instructions">
           <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="panel-claude-code" data-tab="claude-code">Claude Code</button>
-          <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-claude-desktop" data-tab="claude-desktop">Claude Desktop</button>
           <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-cursor" data-tab="cursor">Cursor</button>
           <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-vscode" data-tab="vscode">VS Code</button>
           <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-codex" data-tab="codex">Codex CLI</button>
-          <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-backboard" data-tab="backboard">Backboard</button>
         </div>
         <div class="tab-panels">
 
@@ -264,18 +144,6 @@
             <div class="code-label">Terminal</div>
             <div class="code-block">
               <pre>claude mcp add cisco-pt-mcp --scope user -- uvx cisco-pt-mcp</pre>
-              <button class="copy-btn">Copy</button>
-            </div>
-          </div>
-
-          <div class="tab-panel" role="tabpanel" id="panel-claude-desktop" data-panel="claude-desktop">
-            <div class="code-label">%APPDATA%\Claude\claude_desktop_config.json</div>
-            <div class="code-block">
-              <pre>{
-  "mcpServers": {
-    "cisco-pt-mcp": { "command": "uvx", "args": ["cisco-pt-mcp"] }
-  }
-}</pre>
               <button class="copy-btn">Copy</button>
             </div>
           </div>
@@ -297,7 +165,11 @@
             <div class="code-block">
               <pre>{
   "servers": {
-    "cisco-pt-mcp": { "command": "uvx", "args": ["cisco-pt-mcp"] }
+    "cisco-pt-mcp": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["cisco-pt-mcp"]
+    }
   }
 }</pre>
               <button class="copy-btn">Copy</button>
@@ -314,13 +186,6 @@ args = ["cisco-pt-mcp"]</pre>
             </div>
           </div>
 
-          <div class="tab-panel" role="tabpanel" id="panel-backboard" data-panel="backboard">
-            <div class="code-label">Terminal</div>
-            <div class="code-block">
-              <pre>backboard config add-mcp "{\"name\": \"cisco-pt-mcp\", \"command\": \"uvx\", \"args\": [\"cisco-pt-mcp\"]}"</pre>
-              <button class="copy-btn">Copy</button>
-            </div>
-          </div>
 
         </div>
       </div>
@@ -328,7 +193,7 @@ args = ["cisco-pt-mcp"]</pre>
 
     <!-- Step 2 -->
     <div class="install-step">
-      <h3>2 — Packet Tracer Extension</h3>
+      <h3>2. Packet Tracer Extension</h3>
       <p>Download <a href="https://github.com/muhammadbalawal/cisco-pt-mcp/raw/main/extension/cisco-pt-mcp.pts" target="_blank" rel="noopener noreferrer">cisco-pt-mcp.pts</a> and install via Packet Tracer's Extension Manager:</p>
       <ol>
         <li>Open Packet Tracer.</li>
@@ -341,7 +206,7 @@ args = ["cisco-pt-mcp"]</pre>
 
     <!-- Step 3 -->
     <div class="install-step">
-      <h3>3 — Run</h3>
+      <h3>3. Run</h3>
       <p>Open the bridge window in Packet Tracer, then start your MCP client. The status pill flips to <span class="inline-code">connected</span> within a second. Start prompting.</p>
     </div>
 
@@ -353,16 +218,12 @@ args = ["cisco-pt-mcp"]</pre>
   <div class="container">
     <div class="footer-inner">
       <div>
-        <div class="footer-brand">
-          <span class="footer-brand-dot"></span>
-          cisco-pt-mcp
-        </div>
+        <div class="footer-brand">cisco-pt-mcp</div>
         <p class="footer-tagline">MCP server for Cisco Packet Tracer.<br>Not affiliated with Cisco Systems.</p>
       </div>
       <div>
         <div class="footer-col-label">Product</div>
         <div class="footer-col-links">
-          <a href="#how-it-works">How it works</a>
           <a href="#tools">Tools</a>
           <a href="#install">Install</a>
           <a href="https://pypi.org/project/cisco-pt-mcp/" target="_blank" rel="noopener noreferrer">PyPI</a>
