@@ -54,11 +54,10 @@ args = ["cisco-pt-mcp"]
 2. Go to **Extensions → Scripting → Configure PT Script Modules…**
 3. Click **Add** and select [`cisco-pt-mcp.pts`](extension/cisco-pt-mcp.pts).
 4. Restart Packet Tracer.
-5. Click **Extensions → Packet Tracer MCP** to open the bridge window.
 
 ### 3. Run
 
-Open the bridge window, then start your MCP client. The status pill flips to `connected` within a second. Start prompting.
+Click **Extensions → Packet Tracer MCP** to open the bridge window, then start your MCP client. The status pill flips to `connected` within a second. Start prompting.
 
 ---
 
