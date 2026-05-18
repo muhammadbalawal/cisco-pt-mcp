@@ -16,109 +16,220 @@
 <nav class="nav">
   <div class="nav-inner">
     <a class="nav-logo" href="#">
-      <span class="logo-icon">⬡</span>
-      <span>cisco-pt-mcp</span>
+      <span class="nav-logo-arrow">&gt;</span>
+      <span class="nav-logo-name">cisco-pt-mcp</span>
     </a>
-    <div class="nav-links">
-      <a href="https://github.com/muhammadbalawal/cisco-pt-mcp" class="nav-link" target="_blank" rel="noopener noreferrer">GitHub</a>
-      <a href="https://pypi.org/project/cisco-pt-mcp/" class="nav-link" target="_blank" rel="noopener noreferrer">PyPI</a>
-      <a href="#install" class="btn btn-primary">Install</a>
-    </div>
+    <a href="https://github.com/muhammadbalawal/cisco-pt-mcp" class="btn btn-outline" target="_blank" rel="noopener noreferrer">
+      ★ Star on GitHub
+    </a>
   </div>
 </nav>
 
 <!-- ── HERO ── -->
 <section class="hero">
   <div class="container">
-    <div class="badge">MCP Server &nbsp;·&nbsp; v0.1.2</div>
-    <h1 class="hero-title">
-      AI control for<br>
-      <span class="accent">Cisco Packet Tracer</span>
-    </h1>
+    <h1 class="hero-title">cisco-pt-mcp.</h1>
     <p class="hero-subtitle">
-      Let any MCP-aware client — Claude, Cursor, VS Code — drive a running
-      Packet Tracer instance. Build topologies, configure devices, run simulations.
+      Let AI clients control a running Cisco Packet Tracer instance.<br>
+      Powered by MCP, Socket.IO, and a lightweight PT extension.
     </p>
     <div class="hero-cta">
-      <a href="#install" class="btn btn-primary btn-lg">Get Started</a>
-      <a href="https://github.com/muhammadbalawal/cisco-pt-mcp" class="btn btn-ghost btn-lg" target="_blank" rel="noopener noreferrer">View on GitHub</a>
+      <a href="#install" class="btn btn-primary">Get Started</a>
+      <a href="https://github.com/muhammadbalawal/cisco-pt-mcp" class="btn btn-outline" target="_blank" rel="noopener noreferrer">Open Source</a>
     </div>
-    <!-- Drop your video/iframe here later. The placeholder disappears when a child iframe/video is present. -->
-    <div class="video-wrap">
-      <div class="video-placeholder-inner">
-        <div class="play-icon" aria-hidden="true">▶</div>
+
+    <!-- Replace the inner div with <iframe> or <video> when ready -->
+    <div class="hero-mockup">
+      <div class="hero-mockup-inner" aria-hidden="true">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" style="margin:0 auto 8px">
+          <rect width="32" height="32" rx="8" fill="#e2e2e2"/>
+          <path d="M9 12l4 4-4 4M15 20h8" stroke="#aaa" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
         <p>Demo video coming soon</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── HOW IT WORKS ── -->
-<section class="section section-alt" id="how-it-works">
+<!-- ── FEATURE 1: Build topologies ── -->
+<section class="feature" id="how-it-works">
   <div class="container">
-    <h2 class="section-title">How it works</h2>
-    <p class="section-subtitle">Three steps from zero to AI-driven networking labs.</p>
-    <div class="steps">
-      <div class="step">
-        <div class="step-num">01</div>
-        <h3>Install the server</h3>
-        <p>Register cisco-pt-mcp with your MCP client in one line using <code class="inline-code">uvx</code> — no venv or cloning required.</p>
+    <div class="feature-grid">
+
+      <div class="feature-text">
+        <div class="feature-eyebrow">Topology Builder</div>
+        <h2>Build complete networks with a prompt.</h2>
+        <p>
+          Add routers, switches, and PCs to the canvas, connect them with the right cable type, and configure IPs — all from a single AI conversation.
+        </p>
+        <ul class="feature-bullets">
+          <li>15+ device types — routers, switches, PCs, servers</li>
+          <li>Automatic or explicit cable selection</li>
+          <li>Coordinate-based placement on the canvas</li>
+          <li>Interface module installation at runtime</li>
+        </ul>
       </div>
-      <div class="step-arrow">→</div>
-      <div class="step">
-        <div class="step-num">02</div>
-        <h3>Install the extension</h3>
-        <p>Drop <code class="inline-code">cisco-pt-mcp.pts</code> into Packet Tracer's Extension Manager and restart. A bridge window appears in the Extensions menu.</p>
+
+      <div class="feature-mockup">
+        <div class="mockup-terminal">
+          <div class="mockup-terminal-bar">
+            <span class="dot dot-r"></span>
+            <span class="dot dot-y"></span>
+            <span class="dot dot-g"></span>
+          </div>
+          <div class="mockup-terminal-body">
+            <div><span class="t-prompt">AI &gt; </span><span class="t-cmd">addDevice("R1", "Router-PT", 100, 200)</span></div>
+            <div><span class="t-out">{ </span><span class="t-key">"success"</span><span class="t-out">: </span><span class="t-val">true</span><span class="t-out"> }</span></div>
+            <div style="margin-top:6px"><span class="t-prompt">AI &gt; </span><span class="t-cmd">addDevice("SW1", "2960-24TT", 300, 200)</span></div>
+            <div><span class="t-out">{ </span><span class="t-key">"success"</span><span class="t-out">: </span><span class="t-val">true</span><span class="t-out"> }</span></div>
+            <div style="margin-top:6px"><span class="t-prompt">AI &gt; </span><span class="t-cmd">addLink("R1", "Gig0/0", "SW1", "Fa0/1", "auto")</span></div>
+            <div><span class="t-out">{ </span><span class="t-key">"success"</span><span class="t-out">: </span><span class="t-val">true</span><span class="t-out">, </span><span class="t-key">"message"</span><span class="t-out">: </span><span class="t-str">"Link created"</span><span class="t-out"> }</span></div>
+          </div>
+        </div>
       </div>
-      <div class="step-arrow">→</div>
-      <div class="step">
-        <div class="step-num">03</div>
-        <h3>Ask your AI</h3>
-        <p>"Build a star topology with 3 PCs and a switch, then ping between them." Watch it happen live in Packet Tracer.</p>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURE 2: Configure devices ── -->
+<section class="feature">
+  <div class="container">
+    <div class="feature-grid feature-grid-rev">
+
+      <div class="feature-text">
+        <div class="feature-eyebrow">IOS Configuration</div>
+        <h2>Configure any IOS device.</h2>
+        <p>
+          Run multi-line IOS CLI commands on any router or switch — routing protocols, VLANs, ACLs, NAT — and have the config written to memory automatically.
+        </p>
+        <ul class="feature-bullets">
+          <li>Full IOS command support, any mode</li>
+          <li>Multi-line config blocks in one call</li>
+          <li>write memory runs automatically after config</li>
+          <li>PC IP, DHCP, gateway, and DNS via a single tool</li>
+        </ul>
       </div>
+
+      <div class="feature-mockup">
+        <div class="mockup-terminal">
+          <div class="mockup-terminal-bar">
+            <span class="dot dot-r"></span>
+            <span class="dot dot-y"></span>
+            <span class="dot dot-g"></span>
+          </div>
+          <div class="mockup-terminal-body">
+            <div><span class="t-prompt">AI &gt; </span><span class="t-cmd">configureIosDevice("R1",</span></div>
+            <div style="padding-left:16px"><span class="t-str">"interface Gig0/0\n ip address 192.168.1.1 255.255.255.0\n no shutdown\nip route 0.0.0.0 0.0.0.0 10.0.0.1"</span><span class="t-cmd">)</span></div>
+            <div style="margin-top:6px"><span class="t-out">{</span></div>
+            <div style="padding-left:12px"><span class="t-key">"success"</span><span class="t-out">: </span><span class="t-val">true</span><span class="t-out">,</span></div>
+            <div style="padding-left:12px"><span class="t-key">"message"</span><span class="t-out">: </span><span class="t-str">"4 commands applied"</span></div>
+            <div><span class="t-out">}</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURE 3: Simulate & verify ── -->
+<section class="feature">
+  <div class="container">
+    <div class="feature-grid">
+
+      <div class="feature-text">
+        <div class="feature-eyebrow">Simulation</div>
+        <h2>Simulate and verify, hands-free.</h2>
+        <p>
+          Switch to simulation mode, send PDUs between any two devices, step through frames, and inspect results — without touching the mouse.
+        </p>
+        <ul class="feature-bullets">
+          <li>ICMP, TCP, UDP, HTTP, HTTPS, DNS PDU types</li>
+          <li>Step forward, backward, or reset the timeline</li>
+          <li>Inspect accepted, dropped, and in-transit frames</li>
+          <li>Full command log retrieval per device</li>
+        </ul>
+      </div>
+
+      <div class="feature-mockup">
+        <div class="mockup-terminal">
+          <div class="mockup-terminal-bar">
+            <span class="dot dot-r"></span>
+            <span class="dot dot-y"></span>
+            <span class="dot dot-g"></span>
+          </div>
+          <div class="mockup-terminal-body">
+            <div><span class="t-prompt">AI &gt; </span><span class="t-cmd">sendPdu("PC0", "Server1")</span></div>
+            <div><span class="t-out">{ </span><span class="t-key">"success"</span><span class="t-out">: </span><span class="t-val">true</span><span class="t-out"> }</span></div>
+            <div style="margin-top:6px"><span class="t-prompt">AI &gt; </span><span class="t-cmd">stepSimulation("forward", 5)</span></div>
+            <div><span class="t-out">{ </span><span class="t-key">"frameCount"</span><span class="t-out">: </span><span class="t-val">12</span><span class="t-out"> }</span></div>
+            <div style="margin-top:6px"><span class="t-prompt">AI &gt; </span><span class="t-cmd">getPduResults(["ICMP"])</span></div>
+            <div><span class="t-out">{ </span><span class="t-key">"frames"</span><span class="t-out">: [{ </span><span class="t-key">"status"</span><span class="t-out">: </span><span class="t-str">"accepted"</span><span class="t-out"> }] }</span></div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
 
 <!-- ── TOOLS ── -->
-<section class="section" id="tools">
+<section class="infra-section" id="tools">
   <div class="container">
-    <h2 class="section-title">9 tools exposed</h2>
-    <p class="section-subtitle">Everything the model needs to build and inspect a full Packet Tracer lab.</p>
+    <div class="infra-top">
+      <h2 class="infra-headline">9 tools.<br>One bridge.</h2>
+      <div class="infra-right">
+        <p class="infra-sub">
+          Everything an AI model needs to build and inspect a full Packet Tracer lab — no mouse required.
+        </p>
+        <a href="#install" class="btn btn-primary">Get Started</a>
+      </div>
+    </div>
+
     <div class="tools-grid">
       <div class="tool-card">
+        <div class="tool-icon">+D</div>
         <div class="tool-name">addDevice</div>
         <div class="tool-desc">Drop a router, switch, or PC onto the canvas at a given position.</div>
       </div>
       <div class="tool-card">
+        <div class="tool-icon">+M</div>
         <div class="tool-name">addModule</div>
-        <div class="tool-desc">Install an interface module into a device slot (e.g. add a WIC card to a router).</div>
+        <div class="tool-desc">Install an interface module into a device slot (e.g. WIC card).</div>
       </div>
       <div class="tool-card">
+        <div class="tool-icon">+L</div>
         <div class="tool-name">addLink</div>
-        <div class="tool-desc">Connect two devices with a cable — copper straight-through, crossover, serial, fiber, and more.</div>
+        <div class="tool-desc">Connect two devices with straight-through, crossover, serial, or fiber cable.</div>
       </div>
       <div class="tool-card">
+        <div class="tool-icon">−D</div>
         <div class="tool-name">removeDevice</div>
         <div class="tool-desc">Delete one or more devices from the topology by name.</div>
       </div>
       <div class="tool-card">
+        <div class="tool-icon">−L</div>
         <div class="tool-name">removeLink</div>
-        <div class="tool-desc">Delete one or more cables identified by device and port name.</div>
+        <div class="tool-desc">Delete one or more cables by device and port name.</div>
       </div>
       <div class="tool-card">
+        <div class="tool-icon">IP</div>
         <div class="tool-name">configurePcIp</div>
-        <div class="tool-desc">Set static IP, subnet mask, default gateway, and DNS — or enable DHCP — on a PC.</div>
+        <div class="tool-desc">Set static IP, subnet, gateway, DNS — or enable DHCP — on a PC.</div>
       </div>
       <div class="tool-card">
+        <div class="tool-icon">$&gt;</div>
         <div class="tool-name">configureIosDevice</div>
         <div class="tool-desc">Run any IOS CLI commands on a router or switch. Multi-line configs supported.</div>
       </div>
       <div class="tool-card">
+        <div class="tool-icon">◎</div>
         <div class="tool-name">getNetwork</div>
-        <div class="tool-desc">Snapshot of all devices, their interfaces, and all cable connections in the current workspace.</div>
+        <div class="tool-desc">Snapshot of all devices, interfaces, and cable connections in the workspace.</div>
       </div>
       <div class="tool-card">
+        <div class="tool-icon">ⓘ</div>
         <div class="tool-name">getDeviceInfo</div>
         <div class="tool-desc">Detailed view of a single device — model, interfaces, and connected neighbours.</div>
       </div>
@@ -127,16 +238,16 @@
 </section>
 
 <!-- ── INSTALL ── -->
-<section class="section section-alt" id="install">
+<section class="install-section" id="install">
   <div class="container">
-    <h2 class="section-title">Install</h2>
+    <h2>Install.</h2>
+    <p class="install-lead">Two components. Five minutes. Works with Claude, Cursor, VS Code, and more.</p>
 
-    <!-- Step 1: Server -->
+    <!-- Step 1 -->
     <div class="install-step">
       <h3>1 — MCP Server</h3>
       <p>
-        First, <a href="https://docs.astral.sh/uv/getting-started/installation/" target="_blank" rel="noopener noreferrer">install uv</a> if you don't have it (one command on any platform).
-        Then register the server with your MCP client:
+        First <a href="https://docs.astral.sh/uv/getting-started/installation/" target="_blank" rel="noopener noreferrer">install uv</a> if you don't have it, then register with your client:
       </p>
       <div class="tabs">
         <div class="tab-list" role="tablist" aria-label="MCP client install instructions">
@@ -215,10 +326,10 @@ args = ["cisco-pt-mcp"]</pre>
       </div>
     </div>
 
-    <!-- Step 2: Extension -->
+    <!-- Step 2 -->
     <div class="install-step">
       <h3>2 — Packet Tracer Extension</h3>
-      <p>Download <a href="https://github.com/muhammadbalawal/cisco-pt-mcp/raw/main/extension/cisco-pt-mcp.pts" target="_blank" rel="noopener noreferrer">cisco-pt-mcp.pts</a> then install it through Packet Tracer's Extension Manager:</p>
+      <p>Download <a href="https://github.com/muhammadbalawal/cisco-pt-mcp/raw/main/extension/cisco-pt-mcp.pts" target="_blank" rel="noopener noreferrer">cisco-pt-mcp.pts</a> and install via Packet Tracer's Extension Manager:</p>
       <ol>
         <li>Open Packet Tracer.</li>
         <li>Go to <strong>Extensions → Extension Manager → Install Extension…</strong></li>
@@ -228,10 +339,10 @@ args = ["cisco-pt-mcp"]</pre>
       </ol>
     </div>
 
-    <!-- Step 3: Run -->
+    <!-- Step 3 -->
     <div class="install-step">
       <h3>3 — Run</h3>
-      <p>Launch Packet Tracer and open the bridge window. Then start your MCP client — the bridge status pill flips to <span class="inline-code">connected</span> within a second. Start prompting.</p>
+      <p>Open the bridge window in Packet Tracer, then start your MCP client. The status pill flips to <span class="inline-code">connected</span> within a second. Start prompting.</p>
     </div>
 
   </div>
@@ -240,15 +351,43 @@ args = ["cisco-pt-mcp"]</pre>
 <!-- ── FOOTER ── -->
 <footer class="footer">
   <div class="container">
-    <div class="footer-links">
-      <a href="https://github.com/muhammadbalawal/cisco-pt-mcp" target="_blank" rel="noopener noreferrer">GitHub</a>
-      <a href="https://pypi.org/project/cisco-pt-mcp/" target="_blank" rel="noopener noreferrer">PyPI</a>
-      <a href="https://github.com/muhammadbalawal/cisco-pt-mcp/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>
-      <a href="https://github.com/muhammadbalawal/cisco-pt-mcp/issues" target="_blank" rel="noopener noreferrer">Issues</a>
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">
+          <span class="footer-brand-dot"></span>
+          cisco-pt-mcp
+        </div>
+        <p class="footer-tagline">MCP server for Cisco Packet Tracer.<br>Not affiliated with Cisco Systems.</p>
+      </div>
+      <div>
+        <div class="footer-col-label">Product</div>
+        <div class="footer-col-links">
+          <a href="#how-it-works">How it works</a>
+          <a href="#tools">Tools</a>
+          <a href="#install">Install</a>
+          <a href="https://pypi.org/project/cisco-pt-mcp/" target="_blank" rel="noopener noreferrer">PyPI</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-label">Links</div>
+        <div class="footer-col-links">
+          <a href="https://github.com/muhammadbalawal/cisco-pt-mcp" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="https://github.com/muhammadbalawal/cisco-pt-mcp/issues" target="_blank" rel="noopener noreferrer">Issues</a>
+          <a href="https://github.com/muhammadbalawal/cisco-pt-mcp/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>
+        </div>
+      </div>
     </div>
-    <p class="footer-copy">cisco-pt-mcp is not affiliated with Cisco Systems.</p>
   </div>
 </footer>
+
+<!-- ── BOTTOM BAR ── -->
+<div class="bottom-bar">
+  <a href="https://github.com/muhammadbalawal/cisco-pt-mcp" target="_blank" rel="noopener noreferrer">★ GitHub</a>
+  <span class="bottom-bar-sep"></span>
+  <a href="https://pypi.org/project/cisco-pt-mcp/" target="_blank" rel="noopener noreferrer">PyPI</a>
+  <span class="bottom-bar-sep"></span>
+  <a href="https://github.com/muhammadbalawal/cisco-pt-mcp/issues" target="_blank" rel="noopener noreferrer">Issues</a>
+</div>
 
 <script src="script.js"></script>
 </body>
