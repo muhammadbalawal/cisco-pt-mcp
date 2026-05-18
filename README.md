@@ -51,10 +51,9 @@ args = ["cisco-pt-mcp"]
 ### 2. Packet Tracer Extension
 
 1. Open Packet Tracer.
-2. Go to **Extensions → Extension Manager → Install Extension…**
-3. Select [`cisco-pt-mcp.pts`](extension/cisco-pt-mcp.pts).
-4. Restart Packet Tracer when prompted.
-5. Click **Extensions → Packet Tracer MCP** to open the bridge window.
+2. Go to **Extensions → Scripting → Configure PT Script Modules…**
+3. Click **Add** and select [`cisco-pt-mcp.pts`](extension/cisco-pt-mcp.pts).
+4. Click **Extensions → Packet Tracer MCP** to open the bridge window.
 
 ### 3. Run
 
