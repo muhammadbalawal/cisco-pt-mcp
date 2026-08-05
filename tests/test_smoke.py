@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import asyncio
 import json
+import re
+from pathlib import Path
 
 import pytest
 import mcp.types as mt
@@ -107,4 +109,7 @@ async def test_bridge_rejects_missing_result_field():
 
 
 def test_package_version_matches_pyproject():
-    assert __version__ == "0.1.2"
+    pyproject = Path(__file__).resolve().parent.parent / "pyproject.toml"
+    match = re.search(r'^version = "([^"]+)"$', pyproject.read_text(), re.MULTILINE)
+    assert match is not None, "version not found in pyproject.toml"
+    assert __version__ == match.group(1)
