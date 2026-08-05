@@ -30,13 +30,13 @@ TOOLS: list[dict] = [
                 "deviceModel": {
                     "type": "string",
                     "enum": [
-                        "2911", "1941", "2921", "2901",
-                        "2960-24TT", "2960-48TT", "3560-24PS",
+                        "2911", "1941", "2811", "2901",
+                        "2960-24TT", "2950-24", "3560-24PS",
                         "PC-PT", "Server-PT", "Laptop-PT", "Printer-PT",
                     ],
                     "description": (
-                        "Device model. Router: 2911/1941/2921/2901. "
-                        "Switch: 2960-24TT/2960-48TT/3560-24PS. "
+                        "Device model. Router: 2911/1941/2811/2901. "
+                        "Switch: 2960-24TT/2950-24/3560-24PS. "
                         "End device: PC-PT/Server-PT/Laptop-PT/Printer-PT."
                     ),
                 },
