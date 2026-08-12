@@ -6,4 +6,4 @@ Backboard, ...) can drive a running Packet Tracer through the bridge
 extension shipped under ``extension/source/``.
 """
 
-__version__ = "0.1.5"
+__version__ = "0.1.6"
