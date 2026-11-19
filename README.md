@@ -105,6 +105,7 @@ Click **Extensions → Packet Tracer MCP** to open the bridge window, then start
 | `sendPdu` | Add an ICMP ping PDU between two devices |
 | `getPduResults` | Read PDU outcomes after stepping the simulation |
 | `getCommandLog` | Read the IOS command history logged by Packet Tracer |
+| `runPcCommand` | Run a command in a PC's Command Prompt (`ping`, `ipconfig`, …). Needs the updated extension repacked/loaded in PT; PC command-line behavior is not yet verified on live PT |
 | `buildTopology` | Add devices, links, and PC IP configs in one call |
 
 ---
@@ -125,10 +126,26 @@ Click **Extensions → Packet Tracer MCP** to open the bridge window, then start
   `Port.getOwnerDevice()` (port names repeat across devices), empty
   arrays no longer arrive as `{length: 0}` objects, and hidden ports
   used by a cable are merged into the device's interface list.
-- **Honest limits** — `addModule` can't install modules on most devices
-  (module bays are not API-exposed), so `serial` links need a WIC-2T/
-  HWIC-2T/NIM-2T dragged in by hand first; `addLink` then finds the
-  `Serial0/x/y` names automatically. Errors say when to use the PT GUI.
+- **`addModule` works** — the slot is a *path string*, not an index:
+  `"0/0"` installs a WIC-2T on a 2811 (verified live → `Serial0/0/0`,
+  `Serial0/0/1`). A bare integer `N` auto-tries `N`, `0/N`, `N/0`.
+  Only exotic devices may still need the Physical tab.
+- **`runPcCommand` tool** — runs commands in a PC's Command Prompt via a
+  start/poll pair (`startPcCommand` + `readPcOutput` in the extension).
+  Requires repacking/loading the extension in PT; PC command-line
+  behavior is not yet verified on live PT.
+- **Startup port-conflict handling** — a stale instance holding
+  `127.0.0.1:7531` no longer crashes startup with a raw `OSError 10048`:
+  the bridge waits up to `CISCO_PT_MCP_BIND_WAIT` seconds (default 10)
+  for it to exit, then fails with a clear message. An opt-in ancestor
+  watchdog (`CISCO_PT_MCP_WATCHDOG_INTERVAL=2`; off by default because it
+  exited the server spuriously under Devin) can also exit orphaned instances whose `uv` wrapper was killed while the
+  stdin pipe stayed open (reproduced live — the orphan held the port
+  forever). `CISCO_PT_MCP_PORT` overrides the port for tests.
+- **Honest limits** — `serial` links need a WIC-2T/HWIC-2T/NIM-2T module
+  (installable via `addModule` with a slot path like `"0/0"`, or by hand);
+  `addLink` then finds the `Serial0/x/y` names automatically. Errors say
+  when to use the PT GUI.
 - **`Hub-PT` model** added to `addDevice`.
 - **Wider interface names** — `Console`, `RS232`, `AUX`, `Vlan`, `Port`
   prefixes and an optional space before the port number.

@@ -62,9 +62,12 @@ TOOLS: list[dict] = [
         "name": "addModule",
         "description": (
             "Add an interface module to a device. Powers the device off, "
-            "installs the module, powers it back on. NOTE: PT often does "
-            "not expose module bays via the API — if this fails, the "
-            "module must be installed by hand (device -> Physical tab)."
+            "installs the module, powers it back on. The slot is a path "
+            "string — e.g. a WIC/HWIC bay on a 2811 is \"0/0\" (verified "
+            "live: installs Serial0/0/0 + Serial0/0/1). If you pass a bare "
+            "integer N, the paths \"N\", \"0/N\" and \"N/0\" are tried "
+            "automatically. Only very unusual devices may still need the "
+            "module dragged in by hand (device -> Physical tab)."
         ),
         "inputSchema": {
             "type": "object",
@@ -72,7 +75,10 @@ TOOLS: list[dict] = [
                 "deviceName": {"type": "string", "description": "Existing device name."},
                 "slot": {
                     "type": ["integer", "string"],
-                    "description": "Slot index (e.g. 0-3) or slot path string.",
+                    "description": (
+                        "Slot path string (e.g. \"0/0\", \"0/1\"). An integer "
+                        "or numeric string N auto-tries \"N\", \"0/N\", \"N/0\"."
+                    ),
                 },
                 "model": {
                     "type": "string",
@@ -378,6 +384,37 @@ TOOLS: list[dict] = [
         },
     },
     {
+        "name": "runPcCommand",
+        "description": (
+            "Run a command in a PC/Laptop's Command Prompt (e.g. "
+            "\"ping 192.168.1.2\", \"ipconfig\", \"telnet 192.168.0.1\") and "
+            "return {success, output, prompt}. Long-running commands are "
+            "polled until output settles and the C:\\> prompt returns, or "
+            "timeoutMs expires. Requires the updated PT extension — PC "
+            "command-line behavior is not yet verified on live PT."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "deviceName": {
+                    "type": "string",
+                    "description": "PC/Laptop/Server name (must exist).",
+                },
+                "command": {
+                    "type": "string",
+                    "description": "Command line to execute in the device Command Prompt.",
+                },
+                "timeoutMs": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 60000,
+                    "description": "Max wait in ms (default 15000, capped at 60000).",
+                },
+            },
+            "required": ["deviceName", "command"],
+        },
+    },
+    {
         "name": "buildTopology",
         "description": (
             "Build a topology in ONE call: add devices, create links, and optionally "
@@ -474,4 +511,22 @@ TOOLS: list[dict] = [
     },
 ]
 
-TOOLS_BY_NAME: dict[str, dict] = {t["name"]: t for t in TOOLS}
+# Internal bridge functions — callable through PTBridge.call_tool by the
+# Python side (e.g. runPcCommand's start/poll helpers) but never listed
+# to MCP clients.
+_INTERNAL_TOOLS: list[dict] = [
+    {
+        "name": "startPcCommand",
+        "description": "Internal: start a PC Command Prompt command.",
+        "inputSchema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "readPcOutput",
+        "description": "Internal: read PC Command Prompt output since baseline.",
+        "inputSchema": {"type": "object", "properties": {}},
+    },
+]
+
+TOOLS_BY_NAME: dict[str, dict] = {
+    t["name"]: t for t in TOOLS + _INTERNAL_TOOLS
+}

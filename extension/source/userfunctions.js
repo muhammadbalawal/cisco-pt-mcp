@@ -175,7 +175,7 @@ addModule = function (deviceName, slot, model) {
     if (result != true) {
       return {
         success: false,
-        error: "Failed to add module " + (model) + " to " + (deviceName) + ". Module bays are usually not exposed by the PT API — install it by hand (open the device -> Physical tab -> drag " + (model) + " into a free bay).",
+        error: "Failed to add module " + (model) + " to " + (deviceName) + " — every slot path tried was rejected (tried: " + candidates.join(", ") + "). The slot is a path string like \"0/0\"; install by hand only if the correct path was not among them (open the device -> Physical tab -> drag " + (model) + " into a free bay).",
       };
     }
 
@@ -357,6 +357,66 @@ configureIosDevice = function (deviceName, commands) {
     };
   } catch (error) {
     return fail("Error configuring IOS device", error);
+  }
+};
+
+// PC Command Prompt support. Commands like `ping` run asynchronously for
+// several seconds while runCode calls are synchronous, so the work is
+// split: startPcCommand() snapshots the current output length and issues
+// the command, readPcOutput() reports output grown since that baseline.
+var pcCommandBaselines = {};
+
+startPcCommand = function (deviceName, command) {
+  try {
+    var device = ipc.network().getDevice(deviceName);
+    if (!device) {
+      return { success: false, error: "Device " + (deviceName) + " not found" };
+    }
+    var cli = device.getCommandLine ? device.getCommandLine() : null;
+    if (!cli) {
+      return {
+        success: false,
+        error: "Device " + (deviceName) + " has no command line (PC/Laptop/Server only)",
+      };
+    }
+    var base = 0;
+    try {
+      var out = cli.getOutput();
+      if (out) base = String(out).length;
+    } catch (e) {}
+    pcCommandBaselines[deviceName] = base;
+    cli.enterCommand(command);
+    return { success: true, baseline: base };
+  } catch (error) {
+    return fail("Error starting PC command", error);
+  }
+};
+
+readPcOutput = function (deviceName) {
+  try {
+    var device = ipc.network().getDevice(deviceName);
+    if (!device) {
+      return { success: false, error: "Device " + (deviceName) + " not found" };
+    }
+    var cli = device.getCommandLine ? device.getCommandLine() : null;
+    if (!cli) {
+      return {
+        success: false,
+        error: "Device " + (deviceName) + " has no command line",
+      };
+    }
+    var full = "";
+    try { full = String(cli.getOutput() || ""); } catch (e) {}
+    var base = pcCommandBaselines[deviceName] || 0;
+    var prompt = "";
+    try { prompt = String(cli.getPrompt ? (cli.getPrompt() || "") : ""); } catch (e2) {}
+    return {
+      success: true,
+      output: full.slice(base),
+      prompt: prompt,
+    };
+  } catch (error) {
+    return fail("Error reading PC output", error);
   }
 };
 

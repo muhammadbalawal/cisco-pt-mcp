@@ -15,6 +15,9 @@ from mcp.server import Server
 from mcp.server.stdio import stdio_server
 
 from .bridge import PTBridge
+from .lifecycle import orphan_watchdog
+from .pc import run_pc_command
+from .slots import call_add_module
 from .tools import TOOLS, TOOLS_BY_NAME
 
 log = logging.getLogger(__name__)
@@ -75,7 +78,17 @@ def build_server(bridge: PTBridge) -> Server:
 
         try:
             args = _normalize_tool_arguments(arguments)
-            result = await bridge.call_tool(name, args)
+            if name == "addModule":
+                result = await call_add_module(bridge, args)
+            elif name == "runPcCommand":
+                result = await run_pc_command(
+                    bridge,
+                    device_name=str(args.get("deviceName", "")),
+                    command=str(args.get("command", "")),
+                    timeout_ms=args.get("timeoutMs") or 15000,
+                )
+            else:
+                result = await bridge.call_tool(name, args)
         except MCPRequestError as exc:
             log.warning("tool %s rejected invalid arguments: %s", name, exc)
             return _to_text_content({"success": False, "error": str(exc)})
@@ -92,6 +105,9 @@ async def run() -> None:
     """Run bridge + MCP stdio server until cancelled."""
     bridge = PTBridge()
     await bridge.start()
+    # uv-spawned instances can be orphaned when the wrapper is killed but
+    # our stdin pipe stays open — exit with our ancestors then.
+    watchdog = asyncio.create_task(orphan_watchdog())
     try:
         app = build_server(bridge)
         async with stdio_server() as (read_stream, write_stream):
@@ -101,6 +117,7 @@ async def run() -> None:
                 app.create_initialization_options(),
             )
     finally:
+        watchdog.cancel()
         await bridge.stop()
 
 

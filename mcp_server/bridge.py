@@ -20,6 +20,7 @@ disconnected so there is exactly one live PT at any time.
 from __future__ import annotations
 
 import asyncio
+import errno
 import json
 import logging
 import os
@@ -39,7 +40,14 @@ class PTBridgeProtocolError(RuntimeError):
 
 # Loopback only — both ends are local.
 BRIDGE_HOST = "127.0.0.1"
-BRIDGE_PORT = 7531
+# The PT plugin always dials 7531; CISCO_PT_MCP_PORT exists for tests.
+BRIDGE_PORT = int(os.environ.get("CISCO_PT_MCP_PORT", "7531"))
+
+# When a stale instance still holds the port, give it this long to exit
+# before failing startup (e.g. the old uv-spawned process is mid-exit).
+BIND_WAIT_S = float(os.environ.get("CISCO_PT_MCP_BIND_WAIT", "10"))
+
+_EADDRINUSE = {errno.EADDRINUSE, getattr(errno, "WSAEADDRINUSE", 10048)}
 
 # Bumped via env when long IOS command bursts exceed the default.
 TOOL_TIMEOUT_S = float(os.environ.get("CISCO_PT_MCP_TOOL_TIMEOUT", "60"))
@@ -81,8 +89,41 @@ class PTBridge:
     async def start(self) -> None:
         self._runner = web.AppRunner(self._app)
         await self._runner.setup()
-        self._site = web.TCPSite(self._runner, self.host, self.port)
-        await self._site.start()
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + BIND_WAIT_S
+        try:
+            while True:
+                self._site = web.TCPSite(self._runner, self.host, self.port)
+                try:
+                    await self._site.start()
+                    break
+                except OSError as exc:
+                    self._site = None
+                    if exc.errno not in _EADDRINUSE:
+                        raise
+                    if loop.time() >= deadline:
+                        log.error(
+                            "cannot bind 127.0.0.1:%d — address already in "
+                            "use; an older cisco-pt-mcp instance is probably "
+                            "still running",
+                            self.port,
+                        )
+                        raise RuntimeError(
+                            f"Cannot bind 127.0.0.1:{self.port} — the address "
+                            f"is already in use. An older cisco-pt-mcp instance "
+                            f"is probably still running; please terminate it "
+                            f"(or wait {BIND_WAIT_S:.0f}s for it to exit) and "
+                            f"start again."
+                        ) from exc
+                    log.warning(
+                        "port %d busy, retrying (%.1fs left)",
+                        self.port, deadline - loop.time(),
+                    )
+                    await asyncio.sleep(0.5)
+        except BaseException:
+            await self._runner.cleanup()
+            self._runner = None
+            raise
         log.info("PT bridge listening on http://%s:%d", self.host, self.port)
 
     async def stop(self) -> None:

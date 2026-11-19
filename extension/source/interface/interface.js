@@ -167,6 +167,8 @@
     setPower:            ["deviceName", "power"],
     getPduResults:       ["types"],
     getCommandLog:       ["deviceName", "limit"],
+    startPcCommand:      ["deviceName", "command"],
+    readPcOutput:        ["deviceName"],
     buildTopology:       ["devices", "links", "pcConfigs", "stopOnError"],
   };
 
