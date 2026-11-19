@@ -206,10 +206,11 @@ async def test_add_module_explicit_path_single_attempt():
 
 @pytest.mark.asyncio
 async def test_run_pc_command_polls_until_stable():
+    done = "Pinging\r\nReply\r\n\r\nC:\\>"
     outputs = iter(["Pinging", "Pinging\r\nReply"])
 
     def read(_args):
-        return {"success": True, "output": next(outputs, "Pinging\r\nReply"), "prompt": "C:\\>"}
+        return {"success": True, "output": next(outputs, done), "prompt": "C:\\>"}
 
     b = _FakeBridge({
         "startPcCommand": lambda _a: {"success": True, "baseline": 0},
@@ -219,7 +220,7 @@ async def test_run_pc_command_polls_until_stable():
         b, "PC1", "ping 192.168.1.2", timeout_ms=5000,
         poll_interval=0.01, stable_window=0.03,
     )
-    assert res == {"success": True, "output": "Pinging\r\nReply", "prompt": "C:\\>"}
+    assert res == {"success": True, "output": done, "prompt": "C:\\>"}
     assert b.calls[0][0] == "startPcCommand"
 
 

@@ -65,9 +65,7 @@ async def run_pc_command(
         last_prompt = prompt
 
         stable = now - last_change >= stable_window
-        prompt_done = bool(PC_PROMPT_RE.match(prompt.strip() or prompt)) or bool(
-            PC_TAIL_RE.search(output)
-        )
+        prompt_done = bool(PC_TAIL_RE.search(output))
         if stable and prompt_done:
             return {"success": True, "output": output, "prompt": prompt}
         if now >= deadline:
