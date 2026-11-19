@@ -6,6 +6,73 @@ function fail(prefix, err) {
   return { success: false, error: prefix ? prefix + ": " + msg : msg };
 }
 
+// Device-type groups for 'auto' cable resolution: interconnect gear
+// (switch=1, bridge=3, hub=4, repeater=5, L3-switch=16) vs host-like
+// endpoints (routers, PCs, servers...). Same group -> cross first,
+// different group -> straight first.
+function ptLinkGroup(deviceType) {
+  var interconnect = { 1: 1, 3: 1, 4: 1, 5: 1, 16: 1 };
+  return interconnect[deviceType] ? "interconnect" : "host";
+}
+
+// Ordered candidate link types for 'auto', chosen from the two port
+// types (Port.getType(): eConsole=0, eAux=1, eCopperEthernet=2,
+// eCopperFastEthernet=3, eCopperGigabitEthernet=4, eFiber*=5-6,
+// eSerial=7, eSmartSerial=8, eUsbPort=37, eCustomIO=39, eTty=42,
+// eUsbConsole=43). createLink() validates compatibility itself, so the
+// first candidate that returns true wins.
+function autoLinkCandidates(device1Name, port1Name, device2Name, port2Name) {
+  var d1 = ipc.network().getDevice(device1Name);
+  var d2 = ipc.network().getDevice(device2Name);
+  var t1 = -1, t2 = -1;
+  if (d1 && d2) {
+    var p1 = d1.getPort(port1Name);
+    var p2 = d2.getPort(port2Name);
+    if (p1) t1 = p1.getType();
+    if (p2) t2 = p2.getType();
+  } else {
+    return ["straight", "cross"];
+  }
+
+  var copper = { 2: 1, 3: 1, 4: 1 };
+  if (copper[t1] && copper[t2]) {
+    return ptLinkGroup(d1.getType()) === ptLinkGroup(d2.getType())
+      ? ["cross", "straight"]
+      : ["straight", "cross"];
+  }
+  if (t1 === 7 || t1 === 8 || t2 === 7 || t2 === 8) return ["serial"];
+  if (t1 === 5 || t1 === 6 || t2 === 5 || t2 === 6) return ["fiber"];
+  if (t1 === 39 || t2 === 39) return ["custom_io"];
+  if (t1 === 37 || t2 === 37) return ["usb"];
+  if (t1 === 0 || t1 === 1 || t1 === 42 || t1 === 43 ||
+      t2 === 0 || t2 === 1 || t2 === 42 || t2 === 43) {
+    return ["console", "roll"];
+  }
+  return ["straight", "cross", "console", "roll", "serial", "fiber",
+          "coaxial", "phone", "cable", "octal", "cellular", "usb", "custom_io"];
+}
+
+// "deviceName|portName" key for in_use tracking. Port names repeat across
+// devices (every PC has "FastEthernet0"), so resolve the owner via
+// Port.getOwnerDevice() when the PT version provides it.
+function portOwnerKey(port) {
+  try {
+    if (port.getOwnerDevice) {
+      return port.getOwnerDevice().getName() + "|" + port.getName();
+    }
+  } catch (e) {}
+  return "|" + port.getName();
+}
+
+function portOwnerName(port, fallbackMap) {
+  try {
+    if (port && port.getOwnerDevice) {
+      return port.getOwnerDevice().getName();
+    }
+  } catch (e) {}
+  return port ? fallbackMap[port.getName()] : null;
+}
+
 addDevice = function (deviceName, deviceModel, x, y) {
   try {
     var deviceType = allDeviceTypes[deviceModel];
@@ -13,7 +80,7 @@ addDevice = function (deviceName, deviceModel, x, y) {
     if (deviceType === undefined) {
       return {
         success: false,
-        error: `Unknown device model: ${deviceModel}`,
+        error: "Unknown device model: " + (deviceModel),
       };
     }
 
@@ -26,7 +93,7 @@ addDevice = function (deviceName, deviceModel, x, y) {
     if (!originalDeviceName) {
       return {
         success: false,
-        error: `Failed to add device ${deviceName} (${deviceModel})`,
+        error: "Failed to add device " + (deviceName) + " (" + (deviceModel) + ")",
       };
     }
 
@@ -39,7 +106,7 @@ addDevice = function (deviceName, deviceModel, x, y) {
 
     return {
       success: true,
-      message: `Device ${deviceName} added successfully`,
+      message: "Device " + (deviceName) + " added successfully",
     };
   } catch (error) {
     return fail("Error adding device", error);
@@ -53,7 +120,7 @@ addModule = function (deviceName, slot, model) {
     if (!device) {
       return {
         success: false,
-        error: `Device ${deviceName} not found`,
+        error: "Device " + (deviceName) + " not found",
       };
     }
 
@@ -62,14 +129,43 @@ addModule = function (deviceName, slot, model) {
     if (moduleType === undefined) {
       return {
         success: false,
-        error: `Unknown module model: ${model}`,
+        error: "Unknown module model: " + (model),
       };
     }
+
+    // The API signature is addModule(string slotPath, ModuleType, model) —
+    // the slot is a PATH string, not a bare index. Candidates: the given
+    // slot plus every slot path discoverable in the device's module tree.
+    var candidates = [];
+    if (slot !== undefined && slot !== null && slot !== "") {
+      candidates.push(String(slot));
+    }
+    try {
+      var root = device.getRootModule && device.getRootModule();
+      var mc = root && root.getModuleCount ? root.getModuleCount() : 0;
+      for (var i = 0; i < mc; i++) {
+        var child = root.getModuleAt(i);
+        var path = child && child.getSlotPath ? child.getSlotPath() : null;
+        if (path) candidates.push(path);
+      }
+    } catch (e) {}
 
     var powerState = device.getPower();
     device.setPower(false);
 
-    var result = device.addModule(slot, moduleType, model);
+    var result = false;
+    var usedPath = null;
+    for (var j = 0; j < candidates.length; j++) {
+      try {
+        result = device.addModule(candidates[j], moduleType, model);
+      } catch (e2) {
+        result = false;
+      }
+      if (result === true) {
+        usedPath = candidates[j];
+        break;
+      }
+    }
 
     if (powerState) {
       device.setPower(true);
@@ -79,17 +175,30 @@ addModule = function (deviceName, slot, model) {
     if (result != true) {
       return {
         success: false,
-        error: `Failed to add module ${model} to slot ${slot} on ${deviceName}`,
+        error: "Failed to add module " + (model) + " to " + (deviceName) + ". Module bays are usually not exposed by the PT API — install it by hand (open the device -> Physical tab -> drag " + (model) + " into a free bay).",
       };
     }
 
     return {
       success: true,
-      message: `Module ${model} added to ${deviceName} slot ${slot}`,
+      message: "Module " + (model) + " added to " + (deviceName) + " slot " + usedPath,
     };
   } catch (error) {
     return fail("Error adding module", error);
   }
+};
+
+// Ports like "RS 232", "Console" and WIC serials are never listed by
+// getPortCount, but createLink() still resolves them by name. When the
+// caller's port names fail, retry these known hidden names — wrong
+// guesses just make createLink return false, so the sweep is cheap.
+var HIDDEN_PORT_NAMES = {
+  console: ["RS 232", "RS232", "RS-232", "Console", "AUX", "Aux"],
+  roll:    ["RS 232", "RS232", "RS-232", "Console", "AUX", "Aux"],
+  serial:  ["Serial0/0/0", "Serial0/0/1", "Serial0/1/0", "Serial0/1/1",
+            "Serial0/2/0", "Serial0/2/1", "Serial0/3/0", "Serial0/3/1"],
+  usb:     ["USB", "USB0", "USB1"],
+  coaxial: ["Coaxial", "Coaxial0"],
 };
 
 addLink = function (
@@ -100,37 +209,75 @@ addLink = function (
   linkType
 ) {
   try {
-    var linkTypeValue = allLinkTypes[linkType];
-
-    if (linkTypeValue === undefined) {
-      return {
-        success: false,
-        error: `Unknown link type: ${linkType}`,
-      };
-    }
-
-    var result = ipc
+    var workspace = ipc
       .appWindow()
       .getActiveWorkspace()
-      .getLogicalWorkspace()
-      .createLink(
-        device1Name,
-        device1Interface,
-        device2Name,
-        device2Interface,
-        linkTypeValue
+      .getLogicalWorkspace();
+
+    var candidates;
+    if (linkType === "auto") {
+      candidates = autoLinkCandidates(
+        device1Name, device1Interface, device2Name, device2Interface
       );
+    } else {
+      if (allLinkTypes[linkType] === undefined) {
+        return {
+          success: false,
+          error: "Unknown link type: " + (linkType),
+        };
+      }
+      candidates = [linkType];
+    }
+
+    var result = false;
+    var usedType = null;
+    var usedPort1 = device1Interface;
+    var usedPort2 = device2Interface;
+    outer:
+    for (var i = 0; i < candidates.length; i++) {
+      var pool = HIDDEN_PORT_NAMES[candidates[i]] || [];
+      var names1 = [device1Interface].concat(pool);
+      var names2 = [device2Interface].concat(pool);
+      for (var a = 0; a < names1.length; a++) {
+        for (var b = 0; b < names2.length; b++) {
+          try {
+            result = workspace.createLink(
+              device1Name, names1[a],
+              device2Name, names2[b],
+              allLinkTypes[candidates[i]]
+            );
+          } catch (e) {
+            result = false;
+          }
+          if (result === true) {
+            usedType = candidates[i];
+            usedPort1 = names1[a];
+            usedPort2 = names2[b];
+            break outer;
+          }
+        }
+      }
+    }
 
     if (result != true) {
+      var hint = ". Check that both ports exist and match the cable type.";
+      if (linkType === "console" || linkType === "roll") {
+        hint = ". Console cables use the hidden \"RS 232\" (PC) and \"Console\" (router) ports — both were already tried by name. If this still fails, connect the cable by hand in Packet Tracer.";
+      } else if (linkType === "serial") {
+        hint = ". Serial links need a WIC-2T/HWIC-2T/NIM-2T module installed by hand (device Physical tab); module bays are not exposed by the PT API. Serial0/x/y port names were already tried.";
+      }
       return {
         success: false,
-        error: `Failed to create link between ${device1Name}:${device1Interface} and ${device2Name}:${device2Interface}`,
+        error: "Failed to create link between " + (device1Name) + ":" + (device1Interface) + " and " + (device2Name) + ":" + (device2Interface) + hint,
       };
     }
 
     return {
       success: true,
-      message: `Link created between ${device1Name} and ${device2Name}`,
+      message:
+        "Link created between " + device1Name + ":" + usedPort1 +
+        " and " + device2Name + ":" + usedPort2 +
+        (linkType === "auto" ? " (auto -> " + usedType + ")" : ""),
     };
   } catch (error) {
     return fail("Error creating link", error);
@@ -151,7 +298,7 @@ configurePcIp = function (
     if (!device) {
       return {
         success: false,
-        error: `Device ${deviceName} not found`,
+        error: "Device " + (deviceName) + " not found",
       };
     }
 
@@ -160,7 +307,7 @@ configurePcIp = function (
     if (!port) {
       return {
         success: false,
-        error: `FastEthernet0 port not found on ${deviceName}`,
+        error: "FastEthernet0 port not found on " + (deviceName),
       };
     }
 
@@ -173,7 +320,7 @@ configurePcIp = function (
 
     return {
       success: true,
-      message: `IP configuration applied to ${deviceName}`,
+      message: "IP configuration applied to " + (deviceName),
     };
   } catch (error) {
     return fail("Error configuring PC IP", error);
@@ -187,7 +334,7 @@ configureIosDevice = function (deviceName, commands) {
     if (!device) {
       return {
         success: false,
-        error: `Device ${deviceName} not found`,
+        error: "Device " + (deviceName) + " not found",
       };
     }
 
@@ -206,7 +353,7 @@ configureIosDevice = function (deviceName, commands) {
 
     return {
       success: true,
-      message: `Configuration applied to ${deviceName} (${commandsArray.length} commands)`,
+      message: "Configuration applied to " + (deviceName) + " (" + (commandsArray.length) + " commands)",
     };
   } catch (error) {
     return fail("Error configuring IOS device", error);
@@ -219,34 +366,45 @@ getNetwork = function () {
     var devices = [];
     var connections = [];
 
-    // Pass 1: collect (deviceName, portName) -> in_use using link table
+    // Pass 1: collect in_use ports, keyed by owner + port name. Bare port
+    // names collide across devices (every PC has "FastEthernet0").
     var inUseSet = {};
     var linkCount = ipc.network().getLinkCount();
     for (var li = 0; li < linkCount; li++) {
       var link = ipc.network().getLinkAt(li);
       var p1 = link.getPort1();
       var p2 = link.getPort2();
-      if (p1) inUseSet[p1.getName()] = true;
-      if (p2) inUseSet[p2.getName()] = true;
+      if (p1) inUseSet[portOwnerKey(p1)] = true;
+      if (p2) inUseSet[portOwnerKey(p2)] = true;
     }
 
-    // Pass 2: devices + interfaces, and a portName -> deviceName map for Pass 3.
+    // Pass 2: devices + interfaces, and a portName -> deviceName map for
+    // Pass 3. Hidden ports (Console, "RS 232", WIC serials...) are never
+    // enumerated here — Pass 3 merges them from live connections.
     var portOwner = {};
+    var deviceIndex = {};
+    var ifNameSets = {};
     for (var i = 0; i < deviceCount; i++) {
       var device = ipc.network().getDeviceAt(i);
       var deviceName = device.getName();
 
       var interfaces = [];
+      var ifSet = {};
       var portCount = device.getPortCount();
       for (var j = 0; j < portCount; j++) {
         var port = device.getPortAt(j);
         if (port) {
           var pname = port.getName();
           portOwner[pname] = deviceName;
-          interfaces.push({ name: pname, in_use: inUseSet[pname] === true });
+          ifSet[pname] = true;
+          var busy = inUseSet[deviceName + "|" + pname] === true
+            || inUseSet["|" + pname] === true;
+          interfaces.push({ name: pname, in_use: busy });
         }
       }
 
+      deviceIndex[deviceName] = devices.length;
+      ifNameSets[deviceName] = ifSet;
       devices.push({
         name: deviceName,
         model: device.getModel(),
@@ -255,21 +413,38 @@ getNetwork = function () {
       });
     }
 
-    // Pass 3: connections — one map lookup per endpoint.
+    // Pass 3: connections — resolve each endpoint's owner via
+    // Port.getOwnerDevice() (name-only lookup collides across devices).
+    // Hidden ports surface here, so add them to the device's interface
+    // list marked in_use.
     for (var k = 0; k < linkCount; k++) {
       var lnk = ipc.network().getLinkAt(k);
-      var port1Name = lnk.getPort1().getName();
-      var port2Name = lnk.getPort2().getName();
-      var device1Name = portOwner[port1Name];
-      var device2Name = portOwner[port2Name];
+      var port1 = lnk.getPort1();
+      var port2 = lnk.getPort2();
+      var device1Name = portOwnerName(port1, portOwner);
+      var device2Name = portOwnerName(port2, portOwner);
       if (device1Name && device2Name) {
+        var n1 = port1.getName();
+        var n2 = port2.getName();
         connections.push({
           from: device1Name,
-          fromInterface: port1Name,
+          fromInterface: n1,
           to: device2Name,
-          toInterface: port2Name,
+          toInterface: n2,
           type: lnk.getConnectionType(),
         });
+        if (ifNameSets[device1Name] && !ifNameSets[device1Name][n1]) {
+          devices[deviceIndex[device1Name]].interfaces.push({
+            name: n1, in_use: true,
+          });
+          ifNameSets[device1Name][n1] = true;
+        }
+        if (ifNameSets[device2Name] && !ifNameSets[device2Name][n2]) {
+          devices[deviceIndex[device2Name]].interfaces.push({
+            name: n2, in_use: true,
+          });
+          ifNameSets[device2Name][n2] = true;
+        }
       }
     }
 
@@ -313,7 +488,7 @@ getDeviceInfo = function (deviceName) {
     }
     return {
       success: false,
-      error: `Device ${deviceName} not found`,
+      error: "Device " + (deviceName) + " not found",
     };
   } catch (error) {
     return fail("Error getting device info", error);
@@ -721,5 +896,123 @@ removeLink = function (links) {
     };
   } catch (error) {
     return fail("Error removing links", error);
+  }
+};
+
+// Batch helper: devices -> links -> pcConfigs in one MCP round-trip.
+buildTopology = function (devices, links, pcConfigs, stopOnError) {
+  try {
+    var stop = stopOnError !== false;
+    var deviceResults = [];
+    var linkResults = [];
+    var pcResults = [];
+    var failed = false;
+
+    var deviceList = Array.isArray(devices) ? devices : [];
+    var linkList = Array.isArray(links) ? links : [];
+    var pcList = Array.isArray(pcConfigs) ? pcConfigs : [];
+
+    var i;
+    var item;
+    var r;
+
+    for (i = 0; i < deviceList.length; i++) {
+      item = deviceList[i] || {};
+      r = addDevice(item.deviceName, item.deviceModel, item.x, item.y);
+      deviceResults.push({
+        deviceName: item.deviceName,
+        success: !!(r && r.success),
+        message: r && (r.message || r.error),
+      });
+      if (!(r && r.success)) {
+        failed = true;
+        if (stop) {
+          return {
+            success: false,
+            stoppedEarly: true,
+            stage: "devices",
+            deviceResults: deviceResults,
+            linkResults: linkResults,
+            pcResults: pcResults,
+            error: (r && r.error) || "addDevice failed",
+          };
+        }
+      }
+    }
+
+    for (i = 0; i < linkList.length; i++) {
+      item = linkList[i] || {};
+      r = addLink(
+        item.device1Name,
+        item.device1Interface,
+        item.device2Name,
+        item.device2Interface,
+        item.linkType
+      );
+      linkResults.push({
+        device1Name: item.device1Name,
+        device2Name: item.device2Name,
+        success: !!(r && r.success),
+        message: r && (r.message || r.error),
+      });
+      if (!(r && r.success)) {
+        failed = true;
+        if (stop) {
+          return {
+            success: false,
+            stoppedEarly: true,
+            stage: "links",
+            deviceResults: deviceResults,
+            linkResults: linkResults,
+            pcResults: pcResults,
+            error: (r && r.error) || "addLink failed",
+          };
+        }
+      }
+    }
+
+    for (i = 0; i < pcList.length; i++) {
+      item = pcList[i] || {};
+      r = configurePcIp(
+        item.deviceName,
+        item.dhcpEnabled,
+        item.ipaddress,
+        item.subnetMask,
+        item.defaultGateway,
+        item.dnsServer
+      );
+      pcResults.push({
+        deviceName: item.deviceName,
+        success: !!(r && r.success),
+        message: r && (r.message || r.error),
+      });
+      if (!(r && r.success)) {
+        failed = true;
+        if (stop) {
+          return {
+            success: false,
+            stoppedEarly: true,
+            stage: "pcConfigs",
+            deviceResults: deviceResults,
+            linkResults: linkResults,
+            pcResults: pcResults,
+            error: (r && r.error) || "configurePcIp failed",
+          };
+        }
+      }
+    }
+
+    return {
+      success: !failed,
+      stoppedEarly: false,
+      deviceCount: deviceList.length,
+      linkCount: linkList.length,
+      pcConfigCount: pcList.length,
+      deviceResults: deviceResults,
+      linkResults: linkResults,
+      pcResults: pcResults,
+    };
+  } catch (error) {
+    return fail("Error building topology", error);
   }
 };

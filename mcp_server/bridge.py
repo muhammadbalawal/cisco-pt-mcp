@@ -20,6 +20,7 @@ disconnected so there is exactly one live PT at any time.
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import os
 import uuid
@@ -157,6 +158,23 @@ class PTBridge:
                 return
 
             result = data.get("result")
+
+            # PT's $se bridge can deliver the runCode return as a JSON
+            # string (sometimes double-encoded) instead of an object —
+            # peel string layers until a real value comes out.
+            for _ in range(4):
+                if not isinstance(result, str):
+                    break
+                try:
+                    result = json.loads(result)
+                except (json.JSONDecodeError, TypeError):
+                    break
+
+            # An un-unwrapped runCode envelope {success, result, code} —
+            # collapse it to the userfunctions payload.
+            if isinstance(result, dict) and {"success", "result", "code"} <= set(result):
+                result = result["result"]
+
             if not isinstance(result, Mapping):
                 fut.set_exception(PTBridgeProtocolError("tool_result field 'result' must be an object"))
                 return

@@ -21,6 +21,7 @@ EXPECTED_TOOLS = {
     "setSimulationMode", "getSimulationStatus", "stepSimulation", "sendPdu",
     "renameDevice", "moveDevice", "setPower",
     "getPduResults", "getCommandLog",
+    "buildTopology",
 }
 
 
@@ -106,6 +107,48 @@ async def test_bridge_rejects_missing_result_field():
 
     with pytest.raises(bridge.PTBridgeProtocolError, match="missing required field 'result'"):
         await future
+
+
+@pytest.mark.asyncio
+async def test_bridge_decodes_string_result_payload():
+    b = bridge.PTBridge(host="127.0.0.1", port=17536)
+    future = asyncio.get_running_loop().create_future()
+    b._pending["tc-3"] = future
+
+    await b._sio.handlers["/"]["tool_result"]("sid", {
+        "tool_call_id": "tc-3",
+        "result": json.dumps({"success": True, "message": "ok"}),
+    })
+
+    assert await future == {"success": True, "message": "ok"}
+
+
+@pytest.mark.asyncio
+async def test_bridge_decodes_double_encoded_result():
+    b = bridge.PTBridge(host="127.0.0.1", port=17537)
+    future = asyncio.get_running_loop().create_future()
+    b._pending["tc-4"] = future
+
+    await b._sio.handlers["/"]["tool_result"]("sid", {
+        "tool_call_id": "tc-4",
+        "result": json.dumps(json.dumps({"success": True})),
+    })
+
+    assert await future == {"success": True}
+
+
+@pytest.mark.asyncio
+async def test_bridge_collapses_runcode_envelope():
+    b = bridge.PTBridge(host="127.0.0.1", port=17538)
+    future = asyncio.get_running_loop().create_future()
+    b._pending["tc-5"] = future
+
+    await b._sio.handlers["/"]["tool_result"]("sid", {
+        "tool_call_id": "tc-5",
+        "result": {"success": True, "result": {"deviceCount": 0}, "code": "return getNetwork();"},
+    })
+
+    assert await future == {"deviceCount": 0}
 
 
 def test_package_version_matches_pyproject():
