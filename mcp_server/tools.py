@@ -6,19 +6,30 @@ exactly so ``bridge.py`` can forward by name without translation.
 
 from __future__ import annotations
 
-# IOS interface naming pattern reused by addLink / removeLink.
+# IOS interface naming pattern reused by addLink / removeLink. The second
+# branch covers ports PT never enumerates but still resolves by name in
+# createLink ("RS 232", USB, Coaxial...).
 INTERFACE_PATTERN = (
-    r"^(GigabitEthernet|FastEthernet|Ethernet|Serial|Gi|Fa|Se)"
-    r"(\d+)?(/\d+){0,2}$"
+    r"^((GigabitEthernet|FastEthernet|Ethernet|Serial|Console|RS232|AUX|Vlan|Port|Gi|Fa|Se)"
+    r"( ?\d+)?(/\d+){0,2}|RS ?232|RS-232|Aux|USB ?\d*|Coaxial ?\d*|Cellular ?\d*)$"
 )
+
+# Cable types accepted by addLink / buildTopology. Keep aligned with
+# allLinkTypes in extension/source/links.js (aliases excluded).
+LINK_TYPES = [
+    "straight", "cross", "roll", "fiber", "phone", "cable",
+    "serial", "auto", "console", "wireless", "coaxial",
+    "octal", "cellular", "usb", "custom_io",
+]
 
 TOOLS: list[dict] = [
     {
         "name": "addDevice",
         "description": (
-            "Add a network device to the workspace. Call getNetwork first if "
-            "unsure whether the chosen deviceName is already taken; names must "
-            "be unique."
+            "Add a single network device to the workspace. For multiple devices "
+            "plus links/IPs, prefer buildTopology (one round-trip). Call "
+            "getNetwork first if unsure whether the chosen deviceName is already "
+            "taken; names must be unique."
         ),
         "inputSchema": {
             "type": "object",
@@ -33,6 +44,7 @@ TOOLS: list[dict] = [
                         "2911", "1941", "2811", "2901",
                         "2960-24TT", "2950-24", "3560-24PS",
                         "PC-PT", "Server-PT", "Laptop-PT", "Printer-PT",
+                        "Hub-PT",
                     ],
                     "description": (
                         "Device model. Router: 2911/1941/2811/2901. "
@@ -50,17 +62,23 @@ TOOLS: list[dict] = [
         "name": "addModule",
         "description": (
             "Add an interface module to a device. Powers the device off, "
-            "installs the module, powers it back on."
+            "installs the module, powers it back on. The slot is a path "
+            "string — e.g. a WIC/HWIC bay on a 2811 is \"0/0\" (verified "
+            "live: installs Serial0/0/0 + Serial0/0/1). If you pass a bare "
+            "integer N, the paths \"N\", \"0/N\" and \"N/0\" are tried "
+            "automatically. Only very unusual devices may still need the "
+            "module dragged in by hand (device -> Physical tab)."
         ),
         "inputSchema": {
             "type": "object",
             "properties": {
                 "deviceName": {"type": "string", "description": "Existing device name."},
                 "slot": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 3,
-                    "description": "Slot number (0-3).",
+                    "type": ["integer", "string"],
+                    "description": (
+                        "Slot path string (e.g. \"0/0\", \"0/1\"). An integer "
+                        "or numeric string N auto-tries \"N\", \"0/N\", \"N/0\"."
+                    ),
                 },
                 "model": {
                     "type": "string",
@@ -94,8 +112,19 @@ TOOLS: list[dict] = [
                 },
                 "linkType": {
                     "type": "string",
-                    "enum": ["straight", "cross", "fiber", "serial", "auto"],
-                    "description": "Cable type. Use 'straight' for most LAN, 'cross' for PC-PC, 'serial' for WAN.",
+                    "enum": LINK_TYPES,
+                    "description": (
+                        "Cable type. 'auto' resolves the type from the two "
+                        "port types (recommended default). 'console' uses "
+                        "the hidden ports \"RS 232\" (PC) and \"Console\" "
+                        "(router) — they are not listed by getDeviceInfo but "
+                        "connect fine by name; misspellings are retried "
+                        "automatically. 'serial' needs a WIC-2T/HWIC-2T/"
+                        "NIM-2T module installed by hand (Physical tab — "
+                        "bays are not API-exposed), then Serial0/x/y names "
+                        "are tried automatically. usb/custom_io/cellular/"
+                        "octal are for IoT and end devices."
+                    ),
                 },
             },
             "required": ["device1Name", "device1Interface", "device2Name", "device2Interface", "linkType"],
@@ -176,8 +205,10 @@ TOOLS: list[dict] = [
         "name": "getNetwork",
         "description": (
             "Snapshot of the entire workspace: every device, its interfaces "
-            "(with in_use flags), and every cable. Call this before addLink "
-            "or removeDevice when unsure of current state."
+            "(with in_use flags), and every cable. Hidden ports (Console, "
+            "\"RS 232\", WIC serials) appear in interfaces once a cable "
+            "uses them. Call this before addLink or removeDevice when "
+            "unsure of current state."
         ),
         "inputSchema": {"type": "object", "properties": {}, "required": []},
     },
@@ -352,6 +383,150 @@ TOOLS: list[dict] = [
             "required": [],
         },
     },
+    {
+        "name": "runPcCommand",
+        "description": (
+            "Run a command in a PC/Laptop's Command Prompt (e.g. "
+            "\"ping 192.168.1.2\", \"ipconfig\", \"telnet 192.168.0.1\") and "
+            "return {success, output, prompt}. Long-running commands are "
+            "polled until output settles and the C:\\> prompt returns, or "
+            "timeoutMs expires. Requires the updated PT extension — PC "
+            "command-line behavior is not yet verified on live PT."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "deviceName": {
+                    "type": "string",
+                    "description": "PC/Laptop/Server name (must exist).",
+                },
+                "command": {
+                    "type": "string",
+                    "description": "Command line to execute in the device Command Prompt.",
+                },
+                "timeoutMs": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 60000,
+                    "description": "Max wait in ms (default 15000, capped at 60000).",
+                },
+            },
+            "required": ["deviceName", "command"],
+        },
+    },
+    {
+        "name": "buildTopology",
+        "description": (
+            "Build a topology in ONE call: add devices, create links, and optionally "
+            "configure PC IPs. Prefer this over many sequential addDevice/addLink/"
+            "configurePcIp calls — it is much faster because it avoids repeated MCP "
+            "round-trips. Order: devices first, then links, then pcConfigs."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "devices": {
+                    "type": "array",
+                    "description": "Devices to add, in order.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "deviceName": {"type": "string"},
+                            "deviceModel": {
+                                "type": "string",
+                                "enum": [
+                                    "2911", "1941", "2811", "2901",
+                                    "2960-24TT", "2950-24", "3560-24PS",
+                                    "PC-PT", "Server-PT", "Laptop-PT", "Printer-PT",
+                                    "Hub-PT",
+                                ],
+                            },
+                            "x": {"type": "number"},
+                            "y": {"type": "number"},
+                        },
+                        "required": ["deviceName", "deviceModel", "x", "y"],
+                    },
+                },
+                "links": {
+                    "type": "array",
+                    "description": (
+                        "Cables to create after devices exist. Same rules "
+                        "as addLink: prefer 'auto'; console uses "
+                        "\"RS 232\"<->\"Console\"; serial needs a hand-"
+                        "installed WIC/HWIC module first."
+                    ),
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "device1Name": {"type": "string"},
+                            "device1Interface": {
+                                "type": "string",
+                                "pattern": INTERFACE_PATTERN,
+                            },
+                            "device2Name": {"type": "string"},
+                            "device2Interface": {
+                                "type": "string",
+                                "pattern": INTERFACE_PATTERN,
+                            },
+                            "linkType": {
+                                "type": "string",
+                                "enum": LINK_TYPES,
+                            },
+                        },
+                        "required": [
+                            "device1Name",
+                            "device1Interface",
+                            "device2Name",
+                            "device2Interface",
+                            "linkType",
+                        ],
+                    },
+                },
+                "pcConfigs": {
+                    "type": "array",
+                    "description": "Optional PC/end-device IP settings applied after links.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "deviceName": {"type": "string"},
+                            "dhcpEnabled": {"type": "boolean"},
+                            "ipaddress": {"type": "string"},
+                            "subnetMask": {"type": "string"},
+                            "defaultGateway": {"type": "string"},
+                            "dnsServer": {"type": "string"},
+                        },
+                        "required": ["deviceName"],
+                    },
+                },
+                "stopOnError": {
+                    "type": "boolean",
+                    "description": (
+                        "If true (default), stop at the first failed step. "
+                        "If false, continue and report all failures."
+                    ),
+                },
+            },
+            "required": [],
+        },
+    },
 ]
 
-TOOLS_BY_NAME: dict[str, dict] = {t["name"]: t for t in TOOLS}
+# Internal bridge functions — callable through PTBridge.call_tool by the
+# Python side (e.g. runPcCommand's start/poll helpers) but never listed
+# to MCP clients.
+_INTERNAL_TOOLS: list[dict] = [
+    {
+        "name": "startPcCommand",
+        "description": "Internal: start a PC Command Prompt command.",
+        "inputSchema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "readPcOutput",
+        "description": "Internal: read PC Command Prompt output since baseline.",
+        "inputSchema": {"type": "object", "properties": {}},
+    },
+]
+
+TOOLS_BY_NAME: dict[str, dict] = {
+    t["name"]: t for t in TOOLS + _INTERNAL_TOOLS
+}

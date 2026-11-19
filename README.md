@@ -83,6 +83,8 @@ Click **Extensions → Packet Tracer MCP** to open the bridge window, then start
 | `sendPdu` | Add an ICMP ping PDU between two devices |
 | `getPduResults` | Read PDU outcomes after stepping the simulation |
 | `getCommandLog` | Read the IOS command history logged by Packet Tracer |
+| `runPcCommand` | Run a command in a PC's Command Prompt (`ping`, `ipconfig`, …) and return its output. Requires an extension build that includes `startPcCommand`/`readPcOutput` |
+| `buildTopology` | Add devices, links, and PC IP configs in one call |
 
 ---
 

@@ -74,19 +74,59 @@
     return String(value);
   }
 
+  // $se's JS->host serialization turns JS arrays into plain objects like
+  // {0: .., 1: .., length: N} (an empty array arrives as {length: 0}).
+  // Rebuild real arrays wherever that exact shape appears.
+  function fixArrayShapes(v) {
+    if (Array.isArray(v)) {
+      for (var i = 0; i < v.length; i++) v[i] = fixArrayShapes(v[i]);
+      return v;
+    }
+    if (v && typeof v === "object") {
+      var keys = Object.keys(v);
+      var n = v.length;
+      if (typeof n === "number" && n >= 0 && (n | 0) === n && keys.length === n + 1) {
+        var complete = true;
+        var arr = [];
+        for (var j = 0; j < n; j++) {
+          if (!Object.prototype.hasOwnProperty.call(v, j)) { complete = false; break; }
+          arr.push(fixArrayShapes(v[j]));
+        }
+        if (complete) return arr;
+      }
+      for (var k = 0; k < keys.length; k++) v[keys[k]] = fixArrayShapes(v[keys[k]]);
+    }
+    return v;
+  }
+
   function unwrapRunCodePayload(wrapped) {
     var payload = wrapped;
-    if (typeof wrapped === "string") {
-      try { payload = JSON.parse(wrapped); } catch (_) { payload = wrapped; }
+    // $se may JSON-encode the (already stringified) runCode return again —
+    // keep peeling string layers until an object/value comes out.
+    var guard = 0;
+    while (typeof payload === "string" && guard++ < 8) {
+      try { payload = JSON.parse(payload); } catch (_) { break; }
     }
 
-    // runCode wraps the userfunctions return as {success, result, code}.
-    // Unwrap so the server sees the userfunctions return shape directly.
-    if (payload && typeof payload === "object"
-        && "result" in payload && "success" in payload && "code" in payload) {
-      return payload.result;
+    // runCode returns a JSON string ({success, result, code}) — unwrap to
+    // the userfunctions result. Older builds may hand back a Qt-bridged
+    // object instead: property checks can fail on those, so detect the
+    // envelope via for-in and read fields the same way.
+    var inner;
+    if (payload && typeof payload === "object") {
+      var seen = {};
+      try { for (var k in payload) seen[k] = true; } catch (_) {}
+      if (seen.result && seen.success && seen.code) {
+        inner = payload.result;
+      }
     }
-    return payload;
+    if (inner !== undefined) {
+      if (typeof inner === "string") {
+        try { inner = JSON.parse(inner); } catch (_) {}
+      }
+      return fixArrayShapes(inner);
+    }
+    return fixArrayShapes(payload);
   }
 
   // Builds "return <fn>(<args>);" and ships it through PT's scripting host
@@ -127,6 +167,9 @@
     setPower:            ["deviceName", "power"],
     getPduResults:       ["types"],
     getCommandLog:       ["deviceName", "limit"],
+    startPcCommand:      ["deviceName", "command"],
+    readPcOutput:        ["deviceName"],
+    buildTopology:       ["devices", "links", "pcConfigs", "stopOnError"],
   };
 
   function buildPositionalArgs(tool, input) {
